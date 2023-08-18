@@ -40,11 +40,17 @@ func config() {
 		Args:  cobra.MinimumNArgs(1),
 	}
 	configCmd.Flags().StringVarP(&ip, "ip", "i", "none", "服务器IP")
-	configCmd.Flags().Int16VarP(&port, "port", "p", 9996, "服务器端口")
+	configCmd.Flags().Int16VarP(&port, "port", "p", 0, "服务器端口")
 	configCmd.Flags().StringVarP(&mode, "mode", "m", "server", "客户端类型: client or server")
 	err := configCmd.Execute()
 	if err != nil {
 		panic(err)
+	}
+	if mode == string(Client) && (ip == "" || port == 0) {
+		panic("客户端必须指明正确的服务器IP和端口,例子: go-shareclipbord -i 192.168.1.1 -p 9996 -m client")
+	}
+	if mode == string(Server) && port == 0 {
+		panic("服务端必须指明正确的端口,例子: go-shareclipbord -p 9996 -m server")
 	}
 }
 
@@ -223,13 +229,14 @@ func (c *ClipBoardServer) run(cb *ClipBoard) {
 }
 
 func (c *ClipBoardServer) connHandler(conn net.Conn) {
+	key := conn.RemoteAddr().String()
 	defer func() {
 		conn.Close()
+		c.connMap.Delete(key)
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
-	key := conn.RemoteAddr().String()
 	client, ok := c.connMap.Load(key)
 	if ok {
 		client.(net.Conn).Close()
@@ -244,6 +251,7 @@ func (c *ClipBoardServer) connHandler(conn net.Conn) {
 			panic(err)
 		}
 		<-clipboard.Write(clipboard.FmtText, body)
+		c.publish(body)
 	}
 }
 
@@ -256,6 +264,7 @@ func (c *ClipBoardServer) publish(data []byte) {
 		if err != nil {
 			fmt.Println(err)
 		}
+		fmt.Println("发送数据->", key, ":", string(data))
 		return true
 	})
 }
