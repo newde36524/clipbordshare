@@ -40,7 +40,7 @@ func config() {
 		Args:  cobra.MinimumNArgs(1),
 	}
 	configCmd.Flags().StringVarP(&ip, "ip", "i", "none", "服务器IP")
-	configCmd.Flags().Int16VarP(&port, "port", "p", 0, "服务器端口")
+	configCmd.Flags().Int16VarP(&port, "port", "p", 9996, "服务器端口")
 	configCmd.Flags().StringVarP(&mode, "mode", "m", "server", "客户端类型: client or server")
 	err := configCmd.Execute()
 	if err != nil {
@@ -123,12 +123,12 @@ func (p *protoc) read(buffer io.Reader) ([]byte, error) {
 		if b0 != byte('@') {
 			continue
 		}
-		b1 := make([]byte, len([]byte(p.Prefix)))
+		b1 := make([]byte, len([]byte(p.Prefix))-1)
 		n, err := buf.Read(b1)
 		if err != nil {
 			return nil, err
 		}
-		if !bytes.Equal([]byte(p.Prefix), b1[:n]) {
+		if !bytes.Equal([]byte(p.Prefix), append([]byte{byte('@')}, b1[:n]...)) {
 			continue
 		}
 		b2, err := buf.ReadBytes(byte('_'))
