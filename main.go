@@ -204,7 +204,7 @@ func (c *ClipBoardServer) showLocalIP() string {
 }
 func (c *ClipBoardServer) run(cb *ClipBoard) {
 	cb.pub = c.publish
-	addr := fmt.Sprintf(`127.0.0.1:%d`, c.Port)
+	addr := fmt.Sprintf(`0.0.0.0:%d`, c.Port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		panic(err)
