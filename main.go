@@ -319,8 +319,10 @@ func (c *ClipBoardClient) publish(data []byte) {
 	protoc := protoc{
 		Prefix: "@jmrx#@!%",
 	}
-	_, err := c.conn.Write(protoc.pkg(data))
-	if err != nil {
-		fmt.Println(err)
+	if c.conn != nil {
+		_, err := c.conn.Write(protoc.pkg(data))
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
