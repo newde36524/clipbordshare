@@ -2,6 +2,7 @@ package clipboardshare
 
 import (
 	"context"
+	"log"
 
 	"golang.design/x/clipboard"
 )
@@ -45,12 +46,12 @@ func (c *ClipBoard) Init() *ClipBoard {
 }
 
 func (c *ClipBoard) Run() {
-	err := clipboard.Init()
-	if err != nil {
+	if err := clipboard.Init(); err != nil {
 		panic(err)
 	}
 	ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
 	for data := range ch {
+		log.Println("剪贴板数据:", string(data))
 		c.pub(data)
 	}
 }
@@ -70,4 +71,5 @@ func (c *ClipBoard) client() *ClipBoardClient {
 
 func clipboardWrite(body []byte) {
 	<-clipboard.Write(clipboard.FmtText, body)
+	log.Println("写入剪贴板:", string(body))
 }

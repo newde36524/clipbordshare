@@ -2,6 +2,7 @@ package clipboardshare
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"sync"
 )
@@ -15,7 +16,7 @@ type ClipBoardServer struct {
 func (c *ClipBoardServer) showLocalIP() string {
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	for _, iface := range ifaces {
 		if iface.Flags&net.FlagUp == 0 {
@@ -26,7 +27,7 @@ func (c *ClipBoardServer) showLocalIP() string {
 		}
 		addrs, err := iface.Addrs()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		for _, addr := range addrs {
 			var ip net.IP
@@ -43,7 +44,7 @@ func (c *ClipBoardServer) showLocalIP() string {
 			if ip == nil {
 				continue // not an ipv4 address
 			}
-			fmt.Println("局域网ip: ", ip.String(), "mac: ", iface.HardwareAddr.String())
+			log.Println("局域网ip: ", ip.String(), "mac: ", iface.HardwareAddr.String())
 		}
 	}
 	return "127.0.0.1"
@@ -56,12 +57,12 @@ func (c *ClipBoardServer) run(cb *ClipBoard) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("开始监听,地址:", addr)
+	log.Println("开始监听,地址:", addr)
 	c.showLocalIP()
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			continue
 		}
 		go c.connHandler(conn)
@@ -69,13 +70,13 @@ func (c *ClipBoardServer) run(cb *ClipBoard) {
 }
 
 func (c *ClipBoardServer) connHandler(conn net.Conn) {
-	fmt.Println("客户端:", conn.RemoteAddr().String(), "连接成功")
+	log.Println("客户端:", conn.RemoteAddr().String(), "连接成功")
 	key := conn.RemoteAddr().String()
 	defer func() {
 		conn.Close()
 		c.connMap.Delete(key)
 		if err := recover(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
 	client, ok := c.connMap.Load(key)
@@ -91,6 +92,7 @@ func (c *ClipBoardServer) connHandler(conn net.Conn) {
 		if err != nil {
 			panic(err)
 		}
+		log.Println("服务端接收数据:", string(body))
 		clipboardWrite(body)
 		c.publish(body)
 	}
@@ -105,21 +107,20 @@ func (c *ClipBoardServer) publish(data []byte) {
 		for {
 			n, err := value.(net.Conn).Write(pkg)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				return true
 			}
 			if n == 0 {
-				fmt.Println("发送失败")
+				log.Println("发送失败")
 				return true
 			}
 			if len(pkg) == n {
-				fmt.Println("发送成功")
 				break
 			} else {
 				pkg = pkg[n:]
 			}
 		}
-		fmt.Println("发送数据->", key, ":", string(data))
+		log.Println("发送数据->", key, ":", string(data))
 		return true
 	})
 }

@@ -2,6 +2,7 @@ package clipboardshare
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"time"
 )
@@ -18,11 +19,11 @@ func (c *ClipBoardClient) run(cb *ClipBoard) {
 	for {
 		err := c.connect()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			time.Sleep(time.Second)
 			continue
 		}
-		fmt.Println("连接成功")
+		log.Println("连接成功")
 		c.connHandler()
 	}
 }
@@ -46,7 +47,7 @@ func (c *ClipBoardClient) connHandler() {
 			c.conn.Close()
 		}
 		if err := recover(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
 	for {
@@ -57,7 +58,7 @@ func (c *ClipBoardClient) connHandler() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("接收数据:", string(body))
+		log.Println("接收数据:", string(body))
 		clipboardWrite(body)
 	}
 }
@@ -71,15 +72,15 @@ func (c *ClipBoardClient) publish(data []byte) {
 		for {
 			n, err := c.conn.Write(pkg)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				break
 			}
 			if n == 0 {
-				fmt.Println("发送失败")
+				log.Println("发送失败")
 				break
 			}
 			if len(pkg) == n {
-				fmt.Println("发送成功")
+				log.Println("发送成功")
 				break
 			} else {
 				pkg = pkg[n:]
