@@ -1,0 +1,1 @@
+sc create clipboardshare binpath=$(go env GOPATH)/bin/clipboardshare.exe start= auto displayname= <简介>

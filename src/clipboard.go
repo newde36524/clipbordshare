@@ -1,6 +1,7 @@
 package clipboardshare
 
 import (
+	"bytes"
 	"context"
 	"log"
 
@@ -50,9 +51,13 @@ func (c *ClipBoard) Run() {
 		panic(err)
 	}
 	ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
+	lastData := make([]byte, 0)
 	for data := range ch {
-		log.Println("剪贴板数据:", string(data))
-		c.pub(data)
+		if !bytes.Equal(lastData, data) {
+			log.Println("剪贴板数据:", string(data))
+			lastData = data
+			c.pub(data)
+		}
 	}
 }
 

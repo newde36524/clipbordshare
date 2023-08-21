@@ -1,0 +1,12 @@
+[Unit]
+Description=clipboardshare daemon
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/bin
+ExecStart=/bin/clipboardshare go run main.go -p 9996 -m server
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
