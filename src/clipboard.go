@@ -7,15 +7,15 @@ import (
 	"golang.design/x/clipboard"
 )
 
-type ClipBoardEnum string
+type ClipBoardMode string
 
-var (
-	Client ClipBoardEnum = "client"
-	Server ClipBoardEnum = "server"
+const (
+	Client ClipBoardMode = "client"
+	Server ClipBoardMode = "server"
 )
 
 type ClipBoardOption struct {
-	Mode ClipBoardEnum
+	Mode ClipBoardMode
 	IP   string
 	Port int16
 }
@@ -76,7 +76,6 @@ func (c *ClipBoard) client() *ClipBoardClient {
 }
 
 func clipboardWrite(body []byte) {
-	log.Println("写入剪贴板:", string(body))
 	<-clipboard.Write(clipboard.FmtText, body)
 	<-clipboard.Write(clipboard.FmtText, body)
 }

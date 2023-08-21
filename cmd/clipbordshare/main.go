@@ -22,7 +22,7 @@ func main() {
 		panic("服务端必须指明正确的端口,例子: go-shareclipbord -p 9996 -m server")
 	}
 	opt := clipboardshare.ClipBoardOption{
-		Mode: clipboardshare.ClipBoardEnum(mode),
+		Mode: clipboardshare.ClipBoardMode(mode),
 		IP:   ip,
 		Port: port,
 	}

@@ -56,7 +56,6 @@ func (c *ClipBoardClient) connHandler() {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("接收数据:", string(body))
 		clipboardWrite(body)
 	}
 }
@@ -81,5 +80,6 @@ func (c *ClipBoardClient) publish(data []byte) {
 				pkg = pkg[n:]
 			}
 		}
+		log.Println("发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
 	}
 }

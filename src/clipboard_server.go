@@ -90,7 +90,6 @@ func (c *ClipBoardServer) connHandler(conn net.Conn) {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("服务端接收数据:", string(body))
 		clipboardWrite(body)
 	}
 }
