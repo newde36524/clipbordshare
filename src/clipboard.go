@@ -59,6 +59,9 @@ func (c *ClipBoard) Run() {
 func (c *ClipBoard) server() *ClipBoardServer {
 	return &ClipBoardServer{
 		Port: c.opt.Port,
+		pro: protoc{
+			Prefix: "@jmrx#@!%",
+		},
 	}
 }
 
@@ -66,10 +69,14 @@ func (c *ClipBoard) client() *ClipBoardClient {
 	return &ClipBoardClient{
 		ServerIP: c.opt.IP,
 		Port:     c.opt.Port,
+		pro: protoc{
+			Prefix: "@jmrx#@!%",
+		},
 	}
 }
 
 func clipboardWrite(body []byte) {
-	<-clipboard.Write(clipboard.FmtText, body)
 	log.Println("写入剪贴板:", string(body))
+	<-clipboard.Write(clipboard.FmtText, body)
+	<-clipboard.Write(clipboard.FmtText, body)
 }

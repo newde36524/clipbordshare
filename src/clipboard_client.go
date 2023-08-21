@@ -12,6 +12,7 @@ type ClipBoardClient struct {
 	ServerIP string
 	Port     int16
 	conn     net.Conn
+	pro      protoc
 }
 
 func (c *ClipBoardClient) run(cb *ClipBoard) {
@@ -51,10 +52,7 @@ func (c *ClipBoardClient) connHandler() {
 		}
 	}()
 	for {
-		pro := protoc{
-			Prefix: "@jmrx#@!%",
-		}
-		body, err := pro.read(c.conn)
+		body, err := c.pro.read(c.conn)
 		if err != nil {
 			panic(err)
 		}
@@ -64,11 +62,8 @@ func (c *ClipBoardClient) connHandler() {
 }
 
 func (c *ClipBoardClient) publish(data []byte) {
-	protoc := protoc{
-		Prefix: "@jmrx#@!%",
-	}
 	if c.conn != nil {
-		pkg := protoc.pkg(data)
+		pkg := c.pro.pkg(data)
 		for {
 			n, err := c.conn.Write(pkg)
 			if err != nil {

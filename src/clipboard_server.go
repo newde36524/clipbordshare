@@ -11,6 +11,7 @@ type ClipBoardServer struct {
 	cb      *ClipBoard
 	Port    int16
 	connMap sync.Map
+	pro     protoc
 }
 
 func (c *ClipBoardServer) showLocalIP() string {
@@ -85,25 +86,18 @@ func (c *ClipBoardServer) connHandler(conn net.Conn) {
 	}
 	c.connMap.Store(key, conn)
 	for {
-		pro := protoc{
-			Prefix: "@jmrx#@!%",
-		}
-		body, err := pro.read(conn)
+		body, err := c.pro.read(conn)
 		if err != nil {
 			panic(err)
 		}
 		log.Println("服务端接收数据:", string(body))
 		clipboardWrite(body)
-		c.publish(body)
 	}
 }
 
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
-		protoc := protoc{
-			Prefix: "@jmrx#@!%",
-		}
-		pkg := protoc.pkg(data)
+		pkg := c.pro.pkg(data)
 		for {
 			n, err := value.(net.Conn).Write(pkg)
 			if err != nil {
