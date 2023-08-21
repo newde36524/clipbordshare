@@ -104,15 +104,13 @@ func (c *ClipBoardServer) publish(data []byte) {
 				log.Println(err)
 				return true
 			}
+			count += n
 			if len(pkg) == count {
 				break
-			} else {
-				count += n
-				pkg = pkg[n:]
 			}
+			pkg = pkg[n:]
 			if n == 0 {
-				log.Println("发送失败")
-				return true
+				break
 			}
 		}
 		log.Println("发送数据->", key, ":", string(data))

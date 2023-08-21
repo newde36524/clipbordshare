@@ -70,15 +70,13 @@ func (c *ClipBoardClient) publish(data []byte) {
 				log.Println(err)
 				return
 			}
+			count += n
 			if len(pkg) == count {
 				break
-			} else {
-				count += n
-				pkg = pkg[n:]
 			}
+			pkg = pkg[n:]
 			if n == 0 {
-				log.Println("发送失败")
-				return
+				break
 			}
 		}
 		log.Println("发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
