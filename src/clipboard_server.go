@@ -97,20 +97,22 @@ func (c *ClipBoardServer) connHandler(conn net.Conn) {
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
 		pkg := c.pro.pkg(data)
+		count := 0
 		for {
 			n, err := value.(net.Conn).Write(pkg)
 			if err != nil {
 				log.Println(err)
 				return true
 			}
+			if len(pkg) == count {
+				break
+			} else {
+				count += n
+				pkg = pkg[n:]
+			}
 			if n == 0 {
 				log.Println("发送失败")
 				return true
-			}
-			if len(pkg) == n {
-				break
-			} else {
-				pkg = pkg[n:]
 			}
 		}
 		log.Println("发送数据->", key, ":", string(data))

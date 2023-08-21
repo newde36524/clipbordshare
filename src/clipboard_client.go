@@ -63,21 +63,22 @@ func (c *ClipBoardClient) connHandler() {
 func (c *ClipBoardClient) publish(data []byte) {
 	if c.conn != nil {
 		pkg := c.pro.pkg(data)
+		count := 0
 		for {
 			n, err := c.conn.Write(pkg)
 			if err != nil {
 				log.Println(err)
+				return
+			}
+			if len(pkg) == count {
 				break
+			} else {
+				count += n
+				pkg = pkg[n:]
 			}
 			if n == 0 {
 				log.Println("发送失败")
-				break
-			}
-			if len(pkg) == n {
-				log.Println("发送成功")
-				break
-			} else {
-				pkg = pkg[n:]
+				return
 			}
 		}
 		log.Println("发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
