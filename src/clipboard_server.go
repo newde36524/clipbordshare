@@ -106,11 +106,11 @@ func (c *ClipBoardServer) publish(data []byte) {
 			n, err := value.(net.Conn).Write(pkg)
 			if err != nil {
 				fmt.Println(err)
-				break
+				return true
 			}
 			if n == 0 {
 				fmt.Println("发送失败")
-				break
+				return true
 			}
 			if len(pkg) == n {
 				fmt.Println("发送成功")

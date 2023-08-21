@@ -18,6 +18,7 @@ type ClipBoardOption struct {
 	IP   string
 	Port int16
 }
+
 type ClipBoard struct {
 	opt ClipBoardOption
 	pub func([]byte)
@@ -48,12 +49,10 @@ func (c *ClipBoard) Run() {
 	if err != nil {
 		panic(err)
 	}
-	go func() {
-		ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
-		for data := range ch {
-			c.pub(data)
-		}
-	}()
+	ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
+	for data := range ch {
+		c.pub(data)
+	}
 }
 
 func (c *ClipBoard) server() *ClipBoardServer {
