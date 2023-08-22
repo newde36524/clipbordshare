@@ -111,16 +111,12 @@ func (p *protocFrame) UnMarshal(data []byte) error {
 // @jmrx7_data16xxxxxxxxtxt10001dddddddddddd@jmrxlen(data)_xxxxxx
 func (p *protoc) read(buffer io.ReadWriter, writer io.Writer) error {
 	for {
-		data, err := p.r(buffer)
+		frame, err := p.r(buffer)
 		if err != nil {
 			return err
 		}
-		frame := new(protocFrame)
-		if err := frame.UnMarshal(data); err != nil {
-			return err
-		}
 		for {
-			n, err := writer.Write([]byte(frame.Data))
+			n, err := writer.Write(frame.Data)
 			if err != nil {
 				return err
 			}
@@ -143,7 +139,7 @@ func (p *protoc) read(buffer io.ReadWriter, writer io.Writer) error {
 	return nil
 }
 
-func (p *protoc) r(buffer io.Reader) ([]byte, error) {
+func (p *protoc) r(buffer io.Reader) (*protocFrame, error) {
 	buf := bufio.NewReader(buffer)
 	for {
 		b0, err := buf.ReadByte()
@@ -180,7 +176,11 @@ func (p *protoc) r(buffer io.Reader) ([]byte, error) {
 		if n != dataLen {
 			return nil, errors.New("协议错误")
 		}
-		return body, nil
+		frame := new(protocFrame)
+		if err := frame.UnMarshal(body); err != nil {
+			return nil, err
+		}
+		return frame, nil
 	}
 }
 
@@ -205,12 +205,8 @@ func (p *protoc) write(frame protocFrame, rw io.ReadWriter) error {
 			if !frame.HasNextPag {
 				break
 			}
-			data, err := p.r(rw)
+			rframe, err := p.r(rw)
 			if err != nil {
-				return err
-			}
-			rframe := new(protocFrame)
-			if err := rframe.UnMarshal(data); err != nil {
 				return err
 			}
 			if string(rframe.Data) == "ok" && frame.Flag == rframe.Flag {
