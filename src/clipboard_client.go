@@ -11,7 +11,7 @@ import (
 type ClipBoardClient struct {
 	ServerIP string
 	Port     int16
-	conn     *conn
+	conn     net.Conn
 	pro      protoc
 }
 
@@ -42,7 +42,7 @@ func (c *ClipBoardClient) connect() error {
 	if err != nil {
 		return err
 	}
-	c.conn = &conn{co}
+	c.conn = co
 	return nil
 }
 

@@ -71,11 +71,11 @@ func (c *ClipBoardServer) listen() {
 			log.Println(err)
 			continue
 		}
-		go c.connHandler(&conn{co})
+		go c.connHandler(co)
 	}
 }
 
-func (c *ClipBoardServer) connHandler(co *conn) {
+func (c *ClipBoardServer) connHandler(co net.Conn) {
 	log.Println("客户端:", co.RemoteAddr().String(), "连接成功")
 	key := co.RemoteAddr().String()
 	defer func() {
@@ -88,7 +88,7 @@ func (c *ClipBoardServer) connHandler(co *conn) {
 
 	client, ok := c.connMap.Load(key)
 	if ok {
-		client.(conn).Close()
+		client.(net.Conn).Close()
 	}
 	c.connMap.Store(key, co)
 
@@ -112,7 +112,7 @@ func (c *ClipBoardServer) publish(data []byte) {
 			Type:     dataRaw,
 			DataType: txt,
 			Data:     data,
-		}, value.(conn))
+		}, value.(net.Conn))
 		if err != nil {
 			log.Println(err)
 			return true
