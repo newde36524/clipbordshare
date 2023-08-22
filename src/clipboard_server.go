@@ -1,6 +1,7 @@
 package clipboardshare
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -8,7 +9,6 @@ import (
 )
 
 type ClipBoardServer struct {
-	cb      *ClipBoard
 	Port    int16
 	connMap sync.Map
 	pro     protoc
@@ -51,67 +51,71 @@ func (c *ClipBoardServer) showLocalIP() string {
 	return "127.0.0.1"
 }
 
-func (c *ClipBoardServer) run(cb *ClipBoard) {
+func (c *ClipBoardServer) register(cb *ClipBoard) *ClipBoardServer {
 	cb.pub = c.publish
+	return c
+}
+
+func (c *ClipBoardServer) listen() {
 	addr := fmt.Sprintf(`0.0.0.0:%d`, c.Port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		panic(err)
 	}
+
 	log.Println("开始监听,地址:", addr)
 	c.showLocalIP()
 	for {
-		conn, err := listener.Accept()
+		co, err := listener.Accept()
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		go c.connHandler(conn)
+		go c.connHandler(&conn{co})
 	}
 }
 
-func (c *ClipBoardServer) connHandler(conn net.Conn) {
-	log.Println("客户端:", conn.RemoteAddr().String(), "连接成功")
-	key := conn.RemoteAddr().String()
+func (c *ClipBoardServer) connHandler(co *conn) {
+	log.Println("客户端:", co.RemoteAddr().String(), "连接成功")
+	key := co.RemoteAddr().String()
 	defer func() {
-		conn.Close()
+		co.Close()
 		c.connMap.Delete(key)
 		if err := recover(); err != nil {
 			log.Println(err)
 		}
 	}()
+
 	client, ok := c.connMap.Load(key)
 	if ok {
-		client.(net.Conn).Close()
+		client.(conn).Close()
 	}
-	c.connMap.Store(key, conn)
+	c.connMap.Store(key, co)
+
 	for {
-		body, err := c.pro.read(conn)
+		w := bytes.NewBuffer(nil)
+		err := c.pro.read(co, w)
 		if err != nil {
 			panic(err)
 		}
-		clipboardWrite(body)
+		c.checkData(w.Bytes())
 	}
+}
+
+func (c *ClipBoardServer) checkData(data []byte) {
+	clipboardWrite(data)
 }
 
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
-		pkg := c.pro.pkg(data)
-		count := 0
-		for {
-			n, err := value.(net.Conn).Write(pkg)
-			if err != nil {
-				log.Println(err)
-				return true
-			}
-			count += n
-			if len(pkg) == count {
-				break
-			}
-			pkg = pkg[n:]
-			if n == 0 {
-				break
-			}
+		err := c.pro.write(protocFrame{
+			Type:     dataRaw,
+			DataType: txt,
+			Data:     data,
+		}, value.(conn))
+		if err != nil {
+			log.Println(err)
+			return true
 		}
 		log.Println("发送数据->", key, ":", string(data))
 		return true

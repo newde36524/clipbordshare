@@ -1,6 +1,7 @@
 package clipboardshare
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -8,15 +9,18 @@ import (
 )
 
 type ClipBoardClient struct {
-	cb       *ClipBoard
 	ServerIP string
 	Port     int16
-	conn     net.Conn
+	conn     *conn
 	pro      protoc
 }
 
-func (c *ClipBoardClient) run(cb *ClipBoard) {
+func (c *ClipBoardClient) register(cb *ClipBoard) *ClipBoardClient {
 	cb.pub = c.publish
+	return c
+}
+
+func (c *ClipBoardClient) run() {
 	for {
 		err := c.connect()
 		if err != nil {
@@ -34,11 +38,11 @@ func (c *ClipBoardClient) connect() error {
 		c.conn.Close()
 	}
 	addr := fmt.Sprintf(`%s:%d`, c.ServerIP, c.Port)
-	conn, err := net.Dial("tcp", addr)
+	co, err := net.Dial("tcp", addr)
 	if err != nil {
 		return err
 	}
-	c.conn = conn
+	c.conn = &conn{co}
 	return nil
 }
 
@@ -52,32 +56,29 @@ func (c *ClipBoardClient) connHandler() {
 		}
 	}()
 	for {
-		body, err := c.pro.read(c.conn)
+		w := bytes.NewBuffer(nil)
+		err := c.pro.read(c.conn, w)
 		if err != nil {
 			panic(err)
 		}
-		clipboardWrite(body)
+		c.checkData(w.Bytes())
 	}
+}
+
+func (c *ClipBoardClient) checkData(data []byte) {
+	clipboardWrite(data)
 }
 
 func (c *ClipBoardClient) publish(data []byte) {
 	if c.conn != nil {
-		pkg := c.pro.pkg(data)
-		count := 0
-		for {
-			n, err := c.conn.Write(pkg)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			count += n
-			if len(pkg) == count {
-				break
-			}
-			pkg = pkg[n:]
-			if n == 0 {
-				break
-			}
+		err := c.pro.write(protocFrame{
+			Type:     dataRaw,
+			DataType: txt,
+			Data:     data,
+		}, c.conn)
+		if err != nil {
+			log.Println(err)
+			return
 		}
 		log.Println("发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
 	}

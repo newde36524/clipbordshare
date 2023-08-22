@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/newde36524/clipboardshare"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +25,6 @@ func main() {
 		Port: port,
 	}
 	go clipboardshare.New(opt).Init().Run()
-	log.Println("开始监听剪贴板")
 	select {}
 }
 

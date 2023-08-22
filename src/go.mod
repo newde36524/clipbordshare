@@ -2,7 +2,10 @@ module github.com/newde36524/clipboardshare
 
 go 1.20
 
-require golang.design/x/clipboard v0.7.0
+require (
+	github.com/google/uuid v1.3.1
+	golang.design/x/clipboard v0.7.0
+)
 
 require (
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
