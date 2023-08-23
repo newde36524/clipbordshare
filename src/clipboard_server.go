@@ -12,6 +12,7 @@ type ClipBoardServer struct {
 	Port    int16
 	connMap sync.Map
 	pro     protoc
+	cb      *ClipBoard
 }
 
 func (c *ClipBoardServer) showLocalIP() string {
@@ -52,6 +53,7 @@ func (c *ClipBoardServer) showLocalIP() string {
 }
 
 func (c *ClipBoardServer) register(cb *ClipBoard) *ClipBoardServer {
+	c.cb = cb
 	cb.pub = c.publish
 	return c
 }
@@ -104,7 +106,8 @@ func (c *ClipBoardServer) connHandler(co net.Conn) {
 
 func (c *ClipBoardServer) checkData(data []byte) {
 	fmt.Println("接受数据:", string(data))
-	clipboardWrite(data)
+	// clipboardWrite(data)
+	c.publish(data)
 }
 
 func (c *ClipBoardServer) publish(data []byte) {
@@ -121,4 +124,8 @@ func (c *ClipBoardServer) publish(data []byte) {
 		log.Println("发送数据->", key, ":", string(data))
 		return true
 	})
+}
+
+func (c *ClipBoardServer) connectSelf() {
+	c.cb.client().run()
 }

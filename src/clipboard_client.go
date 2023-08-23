@@ -37,6 +37,9 @@ func (c *ClipBoardClient) connect() error {
 	if c.conn != nil {
 		c.conn.Close()
 	}
+	if c.ServerIP == "" {
+		c.ServerIP = "0.0.0.0"
+	}
 	addr := fmt.Sprintf(`%s:%d`, c.ServerIP, c.Port)
 	co, err := net.Dial("tcp", addr)
 	if err != nil {

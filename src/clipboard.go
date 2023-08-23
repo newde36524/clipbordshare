@@ -16,9 +16,11 @@ const (
 )
 
 type ClipBoardOption struct {
-	Mode ClipBoardMode
-	IP   string
-	Port int16
+	Mode     ClipBoardMode
+	IP       string
+	Port     int16
+	Prefix   string
+	PageSize int
 }
 
 type ClipBoard struct {
@@ -38,7 +40,9 @@ func (c *ClipBoard) Init() *ClipBoard {
 	case Client:
 		go c.client().register(c).run()
 	case Server:
-		go c.server().register(c).listen()
+		srv := c.server().register(c)
+		go srv.listen()
+		go srv.connectSelf()
 	default:
 		panic("不支持的模式:" + c.opt.Mode)
 	}
@@ -65,8 +69,8 @@ func (c *ClipBoard) server() *ClipBoardServer {
 	return &ClipBoardServer{
 		Port: c.opt.Port,
 		pro: protoc{
-			Prefix:   "@jmrx#@!%",
-			pageSize: 1024,
+			Prefix:   c.opt.Prefix,
+			PageSize: c.opt.PageSize,
 		},
 	}
 }
@@ -76,8 +80,8 @@ func (c *ClipBoard) client() *ClipBoardClient {
 		ServerIP: c.opt.IP,
 		Port:     c.opt.Port,
 		pro: protoc{
-			Prefix:   "@jmrx#@!%",
-			pageSize: 1024,
+			Prefix:   c.opt.Prefix,
+			PageSize: c.opt.PageSize,
 		},
 	}
 }

@@ -13,7 +13,7 @@ import (
 
 type protoc struct {
 	Prefix   string
-	pageSize int //分包大小,发送数据长度大于当前值时自动分包发送,单位字节
+	PageSize int //分包大小,发送数据长度大于当前值时自动分包发送,单位字节
 }
 
 type protocType byte
@@ -187,15 +187,15 @@ func (p *protoc) r(buffer io.Reader) (*protocFrame, error) {
 func (p *protoc) write(frame protocFrame, rw io.ReadWriter) error {
 	uid := uuid.New().String()
 	data := frame.Marshal(uid)
-	if len(frame.Data) > p.pageSize {
+	if len(frame.Data) > p.PageSize {
 		data := bytes.NewBuffer([]byte(frame.Data))
 		for {
-			temp := make([]byte, p.pageSize)
+			temp := make([]byte, p.PageSize)
 			n, err := data.Read(temp)
 			if err != nil {
 				return err
 			}
-			frame.HasNextPag = n == p.pageSize
+			frame.HasNextPag = n == p.PageSize
 			frame.PagIndex++
 			frame.Data = temp[:n]
 			err = p.w(frame.Marshal(uid), rw)

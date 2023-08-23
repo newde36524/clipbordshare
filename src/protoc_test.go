@@ -9,7 +9,7 @@ import (
 func TestXxx(t *testing.T) {
 	prot := protoc{
 		Prefix:   "@jmrx#@!%",
-		pageSize: 1,
+		PageSize: 1,
 	}
 	content := "zsk"
 	f := protocFrame{
