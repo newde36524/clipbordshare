@@ -103,6 +103,7 @@ func (c *ClipBoardServer) connHandler(co net.Conn) {
 }
 
 func (c *ClipBoardServer) checkData(data []byte) {
+	fmt.Println("接受数据:", string(data))
 	clipboardWrite(data)
 }
 
