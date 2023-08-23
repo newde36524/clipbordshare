@@ -54,7 +54,6 @@ func (c *ClipBoardServer) showLocalIP() string {
 
 func (c *ClipBoardServer) register(cb *ClipBoard) *ClipBoardServer {
 	c.cb = cb
-	cb.pub = c.publish
 	return c
 }
 
@@ -112,6 +111,9 @@ func (c *ClipBoardServer) checkData(data []byte) {
 
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
+		if key == c.cb.isReceiveData {
+			return true
+		}
 		err := c.pro.write(protocFrame{
 			Type:     dataRaw,
 			DataType: txt,
@@ -127,5 +129,5 @@ func (c *ClipBoardServer) publish(data []byte) {
 }
 
 func (c *ClipBoardServer) connectSelf() {
-	c.cb.client().run()
+	c.cb.client().register(c.cb).run()
 }

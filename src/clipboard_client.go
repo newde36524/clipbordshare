@@ -13,9 +13,11 @@ type ClipBoardClient struct {
 	Port     int16
 	conn     net.Conn
 	pro      protoc
+	cb       *ClipBoard
 }
 
 func (c *ClipBoardClient) register(cb *ClipBoard) *ClipBoardClient {
+	c.cb = cb
 	cb.pub = c.publish
 	return c
 }
@@ -70,10 +72,15 @@ func (c *ClipBoardClient) connHandler() {
 
 func (c *ClipBoardClient) checkData(data []byte) {
 	fmt.Println("接受数据:", string(data))
+	c.cb.isReceiveData = true
 	clipboardWrite(data)
 }
 
 func (c *ClipBoardClient) publish(data []byte) {
+	if c.cb.isReceiveData {
+		c.cb.isReceiveData = false
+		return
+	}
 	if c.conn != nil {
 		err := c.pro.write(protocFrame{
 			Type:     dataRaw,
