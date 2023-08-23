@@ -99,19 +99,20 @@ func (c *ClipBoardServer) connHandler(co net.Conn) {
 		if err != nil {
 			panic(err)
 		}
+		c.cb.source = co.RemoteAddr().String()
 		c.checkData(w.Bytes())
 	}
 }
 
 func (c *ClipBoardServer) checkData(data []byte) {
-	fmt.Println("接受数据:", string(data))
+	fmt.Println("[server]接受数据:", string(data))
 	// clipboardWrite(data)
 	c.publish(data)
 }
 
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
-		if key == c.cb.isReceiveData {
+		if key == c.cb.source {
 			return true
 		}
 		err := c.pro.write(protocFrame{
@@ -123,7 +124,7 @@ func (c *ClipBoardServer) publish(data []byte) {
 			log.Println(err)
 			return true
 		}
-		log.Println("发送数据->", key, ":", string(data))
+		log.Println("[server]发送数据->", key, ":", string(data))
 		return true
 	})
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"sync"
-	"sync/atomic"
 
 	"golang.design/x/clipboard"
 )
@@ -28,6 +27,7 @@ type ClipBoard struct {
 	opt           ClipBoardOption
 	pub           func([]byte)
 	isReceiveData bool
+	source        string
 	lock          sync.RWMutex
 	cond          *sync.Cond
 }
@@ -60,20 +60,20 @@ func (c *ClipBoard) Run() {
 	}
 	log.Println("开始监听剪贴板")
 	ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
-	temp := int32(0)
+	// temp := int32(0)
 	for data := range ch {
 		if len(data) != 0 {
-			c.lock.Lock()
-			for atomic.LoadInt32(&temp) == 0 {
-				c.cond.Wait()
-			}
-			atomic.StoreInt32(&temp, 0)
+			// c.lock.Lock()
+			// for atomic.LoadInt32(&temp) == 0 {
+			// 	c.cond.Wait()
+			// }
+			// atomic.StoreInt32(&temp, 0)
 
 			log.Println("更新剪贴板数据:", string(data))
 			c.pub(data)
 
-			c.lock.Unlock()
-			c.cond.Signal()
+			// c.lock.Unlock()
+			// c.cond.Signal()
 		}
 	}
 }

@@ -71,7 +71,7 @@ func (c *ClipBoardClient) connHandler() {
 }
 
 func (c *ClipBoardClient) checkData(data []byte) {
-	fmt.Println("接受数据:", string(data))
+	fmt.Println("[client]接受数据:", string(data))
 	c.cb.isReceiveData = true
 	clipboardWrite(data)
 }
@@ -91,6 +91,6 @@ func (c *ClipBoardClient) publish(data []byte) {
 			log.Println(err)
 			return
 		}
-		log.Println("发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
+		log.Println("[client]发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
 	}
 }
