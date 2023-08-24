@@ -2,8 +2,10 @@ package clipboardshare
 
 import (
 	"context"
+	"fmt"
 	"log"
 
+	clipboard2 "github.com/atotto/clipboard"
 	"golang.design/x/clipboard"
 )
 
@@ -94,5 +96,9 @@ func (c *ClipBoard) client() *ClipBoardClient {
 }
 
 func clipboardWrite(body []byte) {
-	<-clipboard.Write(clipboard.FmtText, body)
+	// <-clipboard.Write(clipboard.FmtText, body)
+	err := clipboard2.WriteAll(string(body))
+	if err != nil {
+		fmt.Println(err)
+	}
 }
