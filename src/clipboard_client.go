@@ -9,11 +9,12 @@ import (
 )
 
 type ClipBoardClient struct {
-	ServerIP string
-	Port     int16
-	conn     net.Conn
-	pro      protoc
-	cb       *ClipBoard
+	ServerIP      string
+	Port          int16
+	conn          net.Conn
+	pro           protoc
+	cb            *ClipBoard
+	isReceiveData bool
 }
 
 func (c *ClipBoardClient) register(cb *ClipBoard) *ClipBoardClient {
@@ -72,16 +73,17 @@ func (c *ClipBoardClient) connHandler() {
 
 func (c *ClipBoardClient) checkData(data []byte) {
 	fmt.Println("[client]接受数据:", string(data))
-	c.cb.isReceiveData = true
+	c.isReceiveData = true
 	clipboardWrite(data)
 }
 
 func (c *ClipBoardClient) publish(data []byte) {
-	if c.cb.isReceiveData {
-		c.cb.isReceiveData = false
+	if c.isReceiveData {
+		c.isReceiveData = false
 		return
 	}
 	if c.conn != nil {
+		log.Println("[client]发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
 		err := c.pro.write(protocFrame{
 			Type:     dataRaw,
 			DataType: txt,
@@ -91,6 +93,5 @@ func (c *ClipBoardClient) publish(data []byte) {
 			log.Println(err)
 			return
 		}
-		log.Println("[client]发送数据->", c.conn.RemoteAddr().String(), ":", string(data))
 	}
 }

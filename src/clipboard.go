@@ -3,7 +3,6 @@ package clipboardshare
 import (
 	"context"
 	"log"
-	"sync"
 
 	"golang.design/x/clipboard"
 )
@@ -24,19 +23,14 @@ type ClipBoardOption struct {
 }
 
 type ClipBoard struct {
-	opt           ClipBoardOption
-	pub           func([]byte)
-	isReceiveData bool
-	source        string
-	lock          sync.RWMutex
-	cond          *sync.Cond
+	opt ClipBoardOption
+	pub func([]byte)
 }
 
 func New(opt ClipBoardOption) *ClipBoard {
 	c := &ClipBoard{
 		opt: opt,
 	}
-	c.cond = sync.NewCond(&c.lock)
 	return c
 }
 

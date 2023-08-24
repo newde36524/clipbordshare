@@ -37,8 +37,8 @@ func config() {
 		Long:  "剪贴板配置参数",
 		Args:  cobra.MinimumNArgs(1),
 	}
-	configCmd.Flags().StringVarP(&ip, "ip", "i", "none", "服务器IP")
-	configCmd.Flags().Int16VarP(&port, "port", "p", 0, "服务器端口")
+	configCmd.Flags().StringVarP(&ip, "ip", "i", "", "服务器IP")
+	configCmd.Flags().Int16VarP(&port, "port", "p", 9996, "服务器端口")
 	configCmd.Flags().StringVarP(&mode, "mode", "m", "server", "客户端类型: client or server")
 	err := configCmd.Execute()
 	if err != nil {

@@ -13,6 +13,7 @@ type ClipBoardServer struct {
 	connMap sync.Map
 	pro     protoc
 	cb      *ClipBoard
+	source  string
 }
 
 func (c *ClipBoardServer) showLocalIP() string {
@@ -99,20 +100,19 @@ func (c *ClipBoardServer) connHandler(co net.Conn) {
 		if err != nil {
 			panic(err)
 		}
-		c.cb.source = co.RemoteAddr().String()
+		c.source = co.RemoteAddr().String()
 		c.checkData(w.Bytes())
 	}
 }
 
 func (c *ClipBoardServer) checkData(data []byte) {
 	fmt.Println("[server]接受数据:", string(data))
-	// clipboardWrite(data)
 	c.publish(data)
 }
 
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
-		if key == c.cb.source {
+		if key == c.source {
 			return true
 		}
 		err := c.pro.write(protocFrame{
