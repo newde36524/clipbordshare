@@ -115,6 +115,26 @@ func (p *protoc) read(buffer io.ReadWriter, writer io.Writer) error {
 		if err != nil {
 			return err
 		}
+		if err := p.frameHandler(frame, writer); err != nil {
+			return err
+		}
+		if !frame.HasNextPag {
+			break
+		} else {
+			frame.Data = []byte("ok")
+			err := p.w(frame.Marshal(frame.Flag), buffer)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (p *protoc) frameHandler(frame *protocFrame, writer io.Writer) error {
+	switch frame.Type {
+	case heart:
+	case dataRaw:
 		for {
 			n, err := writer.Write(frame.Data)
 			if err != nil {
@@ -126,15 +146,7 @@ func (p *protoc) read(buffer io.ReadWriter, writer io.Writer) error {
 				break
 			}
 		}
-		if !frame.HasNextPag {
-			break
-		} else {
-			frame.Data = []byte("ok")
-			err := p.w(frame.Marshal(frame.Flag), buffer)
-			if err != nil {
-				return err
-			}
-		}
+	default:
 	}
 	return nil
 }

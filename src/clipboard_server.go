@@ -68,7 +68,7 @@ func (c *ClipBoardServer) listen() {
 
 	log.Println("开始监听,地址:", addr)
 	c.showLocalIP()
-	go c.heart(time.Second)
+	// go c.heart(time.Second)
 	for {
 		co, err := listener.Accept()
 		if err != nil {
@@ -115,7 +115,18 @@ func (c *ClipBoardServer) checkData(data []byte) {
 func (c *ClipBoardServer) heart(d time.Duration) {
 	t := time.NewTicker(d)
 	for _ = range t.C {
-		c.publish([]byte("heart")) // client will be ignore this message
+		c.connMap.Range(func(key, value any) bool {
+			if key == c.source {
+				return true
+			}
+			err := c.pro.w([]byte("heart"), value.(net.Conn))
+			if err != nil {
+				log.Println(err)
+				c.connMap.Delete(key)
+				return true
+			}
+			return true
+		})
 	}
 }
 
