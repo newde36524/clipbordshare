@@ -135,6 +135,7 @@ func (c *ClipBoardServer) publish(data []byte) {
 		if key == c.source {
 			return true
 		}
+		log.Println("[server]发送数据->", key, ":", string(data))
 		err := c.pro.write(protocFrame{
 			Type:     dataRaw,
 			DataType: txt,
@@ -145,7 +146,6 @@ func (c *ClipBoardServer) publish(data []byte) {
 			c.connMap.Delete(key)
 			return true
 		}
-		log.Println("[server]发送数据->", key, ":", string(data))
 		return true
 	})
 }

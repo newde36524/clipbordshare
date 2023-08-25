@@ -55,10 +55,13 @@ func (c *ClipBoard) Run() {
 	}
 	log.Println("开始监听剪贴板")
 	ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
-	for data := range ch {
-		if len(data) != 0 {
-			log.Println("更新剪贴板数据:", string(data))
-			c.pub(data)
+	for {
+		select {
+		case data := <-ch:
+			if len(data) != 0 {
+				log.Println("更新剪贴板数据:", string(data))
+				c.pub(data)
+			}
 		}
 	}
 }
