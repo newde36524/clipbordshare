@@ -15,6 +15,8 @@ type ClipBoardClient struct {
 	pro           protoc
 	cb            *ClipBoard
 	isReceiveData bool
+	// alternateA    func(fn func())
+	// alternateB    func(fn func())
 }
 
 func (c *ClipBoardClient) register(cb *ClipBoard) *ClipBoardClient {
@@ -24,6 +26,7 @@ func (c *ClipBoardClient) register(cb *ClipBoard) *ClipBoardClient {
 }
 
 func (c *ClipBoardClient) run() {
+	// c.alternateA, c.alternateB = invoke.AlternateDo()
 	for {
 		err := c.connect()
 		if err != nil {

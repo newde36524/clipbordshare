@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 type ClipBoardServer struct {
@@ -67,6 +68,7 @@ func (c *ClipBoardServer) listen() {
 
 	log.Println("开始监听,地址:", addr)
 	c.showLocalIP()
+	go c.heart(time.Second)
 	for {
 		co, err := listener.Accept()
 		if err != nil {
@@ -110,6 +112,13 @@ func (c *ClipBoardServer) checkData(data []byte) {
 	c.publish(data)
 }
 
+func (c *ClipBoardServer) heart(d time.Duration) {
+	t := time.NewTicker(d)
+	for _ = range t.C {
+		c.publish([]byte("heart")) // client will be ignore this message
+	}
+}
+
 func (c *ClipBoardServer) publish(data []byte) {
 	c.connMap.Range(func(key, value any) bool {
 		if key == c.source {
@@ -122,6 +131,7 @@ func (c *ClipBoardServer) publish(data []byte) {
 		}, value.(net.Conn))
 		if err != nil {
 			log.Println(err)
+			c.connMap.Delete(key)
 			return true
 		}
 		log.Println("[server]发送数据->", key, ":", string(data))
