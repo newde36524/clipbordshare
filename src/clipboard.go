@@ -1,12 +1,11 @@
 package clipboardshare
 
 import (
+	"context"
 	"log"
-	"strings"
-	"time"
 
-	// "golang.design/x/clipboard"
-	"github.com/atotto/clipboard"
+	"github.com/newde36524/clipboardshare/utils/bytesUtil"
+	"golang.design/x/clipboard"
 )
 
 type ClipBoardMode string
@@ -51,21 +50,17 @@ func (c *ClipBoard) Init() *ClipBoard {
 }
 
 func (c *ClipBoard) Run() {
-	// if err := clipboard.Init(); err != nil {
-	// 	panic(err)
-	// }
+	if err := clipboard.Init(); err != nil {
+		panic(err)
+	}
 	log.Println("开始监听剪贴板")
-	// ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
-	t := time.NewTicker(time.Second)
-	lastStr := ""
+	ch := clipboard.Watch(context.TODO(), clipboard.FmtText)
 	for {
 		select {
-		case <-t.C:
-			data, _ := clipboard.ReadAll()
-			if data != "" && data != lastStr {
-				lastStr = data
-				log.Println("更新剪贴板数据:", data)
-				c.pub([]byte(data))
+		case data := <-ch:
+			if len(data) != 0 {
+				log.Println("更新剪贴板数据:", string(data))
+				go c.pub(data)
 			}
 		}
 	}
@@ -94,17 +89,9 @@ func (c *ClipBoard) client() *ClipBoardClient {
 
 func clipboardWrite(body []byte) {
 	log.Println("写入剪贴板s")
-	err := clipboard.WriteAll(string(body))
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	data, err := clipboard.ReadAll()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	if strings.EqualFold(string(body), string(data)) {
+	<-clipboard.Write(clipboard.FmtText, body)
+	data := clipboard.Read(clipboard.FmtText)
+	if bytesUtil.Equal(body, data) {
 		log.Println("写入剪贴板成功")
 	} else {
 		log.Println("写入剪贴板失败")
