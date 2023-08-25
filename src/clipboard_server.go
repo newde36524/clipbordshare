@@ -54,11 +54,6 @@ func (c *ClipBoardServer) showLocalIP() string {
 	return "127.0.0.1"
 }
 
-func (c *ClipBoardServer) register(cb *ClipBoard) *ClipBoardServer {
-	c.cb = cb
-	return c
-}
-
 func (c *ClipBoardServer) listen() {
 	addr := fmt.Sprintf(`0.0.0.0:%d`, c.Port)
 	listener, err := net.Listen("tcp", addr)
@@ -116,9 +111,6 @@ func (c *ClipBoardServer) heart(d time.Duration) {
 	t := time.NewTicker(d)
 	for _ = range t.C {
 		c.connMap.Range(func(key, value any) bool {
-			if key == c.source {
-				return true
-			}
 			err := c.pro.w([]byte("heart"), value.(net.Conn))
 			if err != nil {
 				log.Println(err)

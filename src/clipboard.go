@@ -40,7 +40,7 @@ func (c *ClipBoard) Init() *ClipBoard {
 	case Client:
 		go c.client().register(c).run()
 	case Server:
-		srv := c.server().register(c)
+		srv := c.server()
 		go srv.listen()
 		go srv.connectSelf()
 	default:
@@ -73,6 +73,7 @@ func (c *ClipBoard) server() *ClipBoardServer {
 			Prefix:   c.opt.Prefix,
 			PageSize: c.opt.PageSize,
 		},
+		cb: c,
 	}
 }
 
@@ -84,6 +85,7 @@ func (c *ClipBoard) client() *ClipBoardClient {
 			Prefix:   c.opt.Prefix,
 			PageSize: c.opt.PageSize,
 		},
+		cb: c,
 	}
 }
 
