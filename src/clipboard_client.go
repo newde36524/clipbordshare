@@ -71,7 +71,7 @@ func (c *ClipBoardClient) connHandler() {
 }
 
 func (c *ClipBoardClient) checkData(data []byte) {
-	fmt.Println("[client]接受数据:", string(data))
+	fmt.Println("[client]接收数据:", string(data))
 	c.isReceiveData = true
 	clipboardWrite(data)
 }

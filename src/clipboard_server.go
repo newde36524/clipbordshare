@@ -103,7 +103,7 @@ func (c *ClipBoardServer) connHandler(co net.Conn) {
 }
 
 func (c *ClipBoardServer) checkData(data []byte) {
-	fmt.Println("[server]接受数据:", string(data))
+	fmt.Println("[server]接收数据:", string(data))
 	c.publish(data)
 }
 

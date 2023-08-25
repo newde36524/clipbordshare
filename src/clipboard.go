@@ -91,11 +91,14 @@ func (c *ClipBoard) client() *ClipBoardClient {
 
 func clipboardWrite(body []byte) {
 	log.Println("写入剪贴板s")
-	<-clipboard.Write(clipboard.FmtText, body)
-	data := clipboard.Read(clipboard.FmtText)
-	if bytesUtil.Equal(body, data) {
-		log.Println("写入剪贴板成功")
-	} else {
-		log.Println("写入剪贴板失败")
+	ch := clipboard.Write(clipboard.FmtText, body)
+	select {
+	case <-ch:
+		data := clipboard.Read(clipboard.FmtText)
+		if bytesUtil.Equal(body, data) {
+			log.Println("写入剪贴板成功")
+		} else {
+			log.Println("写入剪贴板失败")
+		}
 	}
 }
