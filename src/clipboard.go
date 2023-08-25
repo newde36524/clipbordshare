@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/newde36524/clipboardshare/utils/bytesUtil"
 	"golang.design/x/clipboard"
 )
 
@@ -84,5 +85,12 @@ func (c *ClipBoard) client() *ClipBoardClient {
 }
 
 func clipboardWrite(body []byte) {
-	clipboard.Write(clipboard.FmtText, body)
+	log.Println("写入剪贴板s")
+	<-clipboard.Write(clipboard.FmtText, body)
+	data := clipboard.Read(clipboard.FmtText)
+	if bytesUtil.Equal(body, data) {
+		log.Println("写入剪贴板成功")
+	} else {
+		log.Println("写入剪贴板失败")
+	}
 }
