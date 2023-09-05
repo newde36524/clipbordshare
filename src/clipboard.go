@@ -25,11 +25,16 @@ type ClipBoardOption struct {
 type ClipBoard struct {
 	opt ClipBoardOption
 	pub func([]byte)
+	pro protoc
 }
 
 func New(opt ClipBoardOption) *ClipBoard {
 	c := &ClipBoard{
 		opt: opt,
+		pro: protoc{
+			Prefix:   opt.Prefix,
+			PageSize: opt.PageSize,
+		},
 	}
 	return c
 }
@@ -68,11 +73,8 @@ func (c *ClipBoard) Run() {
 func (c *ClipBoard) server() *ClipBoardServer {
 	return &ClipBoardServer{
 		Port: c.opt.Port,
-		pro: protoc{
-			Prefix:   c.opt.Prefix,
-			PageSize: c.opt.PageSize,
-		},
-		cb: c,
+		pro:  c.pro,
+		cb:   c,
 	}
 }
 
@@ -80,11 +82,7 @@ func (c *ClipBoard) client() *ClipBoardClient {
 	return &ClipBoardClient{
 		ServerIP: c.opt.IP,
 		Port:     c.opt.Port,
-		pro: protoc{
-			Prefix:   c.opt.Prefix,
-			PageSize: c.opt.PageSize,
-		},
-		cb: c,
+		pro:      c.pro,
 	}
 }
 
@@ -92,7 +90,11 @@ func clipboardWrite(body []byte) {
 	log.Println("写入剪贴板s")
 	ch := clipboard.Write(clipboard.FmtText, body)
 	select {
-	case <-ch:
-		log.Println("写入剪贴板成功")
+	case _, ok := <-ch:
+		if ok {
+			log.Println("写入剪贴板成功")
+		} else {
+			log.Println("写入剪贴板失败")
+		}
 	}
 }

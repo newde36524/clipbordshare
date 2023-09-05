@@ -13,12 +13,11 @@ type ClipBoardClient struct {
 	Port          int16
 	conn          net.Conn
 	pro           protoc
-	cb            *ClipBoard
 	isReceiveData bool
 }
 
 func (c *ClipBoardClient) register(cb *ClipBoard) *ClipBoardClient {
-	c.cb.pub = c.publish
+	cb.pub = c.publish
 	return c
 }
 
